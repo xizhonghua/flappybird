@@ -1,16 +1,17 @@
 var Const = {
-	BIRD_RADIUS : 30,
-	BIRD_JUMP_SPEED : 14,
-	OBST_WIDTH : 100,
-	OBST_MAX_HEIGHT : 380,
+	BIRD_RADIUS : 28,
+	BIRD_JUMP_SPEED : 12,
+	OBST_WIDTH : 85,
+	OBST_MAX_HEIGHT : 220,
 	OBST_MIN_HEIGHT : 60,
 	OBST_COUNT : 100,
 	OBST_START_X : 600,
-	OBST_MARGIN : 240,
+	OBST_MARGIN : 300,
+	OBST_HEAD_HEIGHT : 32,
 	SCREEN_HEIGHT : 640,
 	SCREEN_WIDTH : 480,
-	PASS_HEIGHT : 240,
-	X_VOL : 1.6,
+	PASS_HEIGHT : 200,
+	X_VOL : 3.5,
 	G : 0.8
 };
 	
@@ -189,16 +190,45 @@ XHH.Game.prototype = {
 	
 	drawBird : function() {
 		ctx.beginPath();
+		ctx.strokeStyle = "#FFFFFF";
 		ctx.fillStyle = "#FF0000";
 		ctx.arc(this.bird.x - this.left, this.bird.y, this.bird.r, 0, 2*Math.PI);
 		ctx.fill();
+		//ctx.endPath();
 	},
 	
 	drawObst : function(obst) {
-		ctx.fillStyle = "#00FF00";
 		var x = obst.x - this.left - obst.width/2;
 		var y = obst.dir == 1 ? 0 : Const.SCREEN_HEIGHT - obst.height;
-		ctx.fillRect(x, y, obst.width, obst.height);
+		var x_s = x + obst.width/3;
+		var w_l = obst.width/3;
+		var w_r = obst.width/3*2;
+
+      	var grd=this.ctx.createLinearGradient(x,y,x_s,y);
+		grd.addColorStop(0,"#75BA6E");
+		grd.addColorStop(1,"#DDF0D8");
+		this.ctx.fillStyle = grd;
+		
+		this.ctx.fillRect(x, y, w_l, obst.height);
+		
+		var grd=this.ctx.createLinearGradient(x_s,y,x + obst.width, y);
+		grd.addColorStop(0,"#DDF0D8");
+		grd.addColorStop(1,"#318C27");
+		
+		this.ctx.fillStyle = grd;
+		this.ctx.fillRect(x_s, y, w_r, obst.height);
+		
+		this.ctx.beginPath();
+		this.ctx.strokeStyle = "291B09";
+		this.ctx.lineWidth = 2;
+		this.ctx.rect(x,y,obst.width,obst.height);
+		this.ctx.stroke();
+		
+		this.ctx.beginPath();
+		this.ctx.strokeStyle = "291B09";
+		this.ctx.lineWidth = 3;
+		this.ctx.rect(x,obst.dir == 1 ? y + obst.height - Const.OBST_HEAD_HEIGHT : y, obst.width, Const.OBST_HEAD_HEIGHT);
+		this.ctx.stroke();
 	},
 	
 	drawObsts : function() {

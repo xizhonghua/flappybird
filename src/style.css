@@ -11,3 +11,6 @@
 .message { top:240px; }
 
 #record { top:300px; }
+
+#gameover { color: #F5690C; font-weight:bolder;}
+#start { color: #398F28; }
