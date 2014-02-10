@@ -1,10 +1,10 @@
 var Const = {
 	BIRD_RADIUS : 28,
-	BIRD_JUMP_SPEED : 8,
+	BIRD_JUMP_SPEED : 10,
 	OBST_WIDTH : 85,
-	OBST_MAX_HEIGHT : 220,
-	OBST_MIN_HEIGHT : 60,
-	OBST_COUNT : 100,
+	OBST_MAX_HEIGHT : 240,
+	OBST_MIN_HEIGHT : 40,
+	OBST_COUNT : 10000,
 	OBST_START_X : 300,
 	OBST_MARGIN : 300,
 	OBST_HEAD_HEIGHT : 32,
@@ -12,7 +12,7 @@ var Const = {
 	SCREEN_WIDTH : 480,
 	PASS_HEIGHT : 200,
 	X_VOL : 4,
-	G : 0.6 
+	G : 0.8
 };
 	
 var XHH = {	
@@ -63,7 +63,7 @@ var XHH = {
 		if(this.b.y - Const.BIRD_RADIUS >= Const.SCREEN_HEIGHT) this.valid = false;
 	
 		this.g = parent.h + this.b.dis(parent.b);
-		this.h = nextCenter.dis(this.b) + (nextCenter.y - this.b.y)*(nextCenter.y - this.b.y);
+		this.h = nextCenter.dis(this.b) + (nextCenter.y - this.b.y)*(nextCenter.y - this.b.y)*0.01;
 		this.f = this.g + this.h;
 	},
 	
@@ -152,7 +152,7 @@ XHH.Game.prototype = {
 	
 	
 	random : function() {
-		var x = Math.abs(Math.sin(this.seed++)) * 10000;
+		var x = Math.abs(Math.sin(this.seed++)) * 100;
     	return x - Math.floor(x);
 	},
 	
@@ -377,7 +377,7 @@ XHH.Game.prototype = {
 			expended ++;
 			
 			// goal reached
-			if(p.b.dis(center) < 16) {
+			if(p.b.dis(center) < 32) {
 				console.log("found!");
 				this.ops = [];
 				this.traj = [];
