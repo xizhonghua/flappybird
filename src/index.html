@@ -11,9 +11,11 @@
 		<div id="score">0</div>
 		<div id="start" class="message">Press Space</div>
 		<div id="gameover" class="message">Game Over</div>
+		<div id="demo" class="message">Auto Playing</div>
 		<div id="record">0</div>
 		</div>
 		<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+		<script src="priority-queue.js"></script>
 		<script src="flappybird.js"></script>
 		<script>
 			window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
@@ -24,14 +26,21 @@
 			var game = new XHH.Game();
 			game.init(1, ctx);
 			
-			$("#gameover, #record").hide();
+			$("#gameover, #record, #demo").hide();
 			
 			function render(timestamp) {
 				game.render();
 				$("#score").html(game.score);
-				if(game.isGameStarted) $("#start").hide(); else $("#start").show();
+				if(game.isGameStarted) {
+					$("#start").hide();
+					if(game.isCOM) $("#demo").show(); 
+				}
+				else {
+					$("#start").show();
+				}
 				if(game.isGameOver) {
 					$("#gameover").show();
+					$("#demo").hide();
 					$("#record").html("Record: " + game.record).show(); 
 				}
 				else {

@@ -1,18 +1,18 @@
 var Const = {
 	BIRD_RADIUS : 28,
-	BIRD_JUMP_SPEED : 12,
+	BIRD_JUMP_SPEED : 8,
 	OBST_WIDTH : 85,
 	OBST_MAX_HEIGHT : 220,
 	OBST_MIN_HEIGHT : 60,
 	OBST_COUNT : 100,
-	OBST_START_X : 600,
+	OBST_START_X : 300,
 	OBST_MARGIN : 300,
 	OBST_HEAD_HEIGHT : 32,
 	SCREEN_HEIGHT : 640,
 	SCREEN_WIDTH : 480,
 	PASS_HEIGHT : 200,
-	X_VOL : 3.5,
-	G : 0.8
+	X_VOL : 4,
+	G : 0.6 
 };
 	
 var XHH = {	
@@ -40,14 +40,50 @@ var XHH = {
 	},
 	
 	Game : function() {
-	}	
+	},
+	
+	Node : function(parent, jump, nextCenter) {
+		this.frame = parent.frame + 1;
+		this.r = Const.BIRD_RADIUS;
+		this.parent = parent;
+		
+		this.b = new XHH.Point(parent.b.x + Const.X_VOL, parent.b.y);
+		
+		this.jump = jump;
+		this.valid = true;
+		
+		if(jump) // jump
+			this.v = -Const.BIRD_JUMP_SPEED;
+		else
+			this.v = parent.v + Const.G;
+			
+		this.b.y += this.v;
+		
+		if(this.b.y < 0) this.b.v = 0;
+		if(this.b.y - Const.BIRD_RADIUS >= Const.SCREEN_HEIGHT) this.valid = false;
+	
+		this.g = parent.h + this.b.dis(parent.b);
+		this.h = nextCenter.dis(this.b) + (nextCenter.y - this.b.y)*(nextCenter.y - this.b.y);
+		this.f = this.g + this.h;
+	},
+	
+	OP : function(frame, jump) {
+		this.frame = frame;
+		this.jump = jump;
+	}
 };
 
 XHH.Point.prototype = {
 	dis : function(point) {
 		return Math.sqrt((this.x - point.x)*(this.x - point.x) + (this.y - point.y)*(this.y - point.y))
 	}
-}
+};
+
+XHH.Node.prototype = {
+	toOP : function() {
+		return new XHH.OP(this.frame, this.jump);
+	}
+};
 
 XHH.Bird.prototype = {
 	jump : function() {
@@ -94,19 +130,19 @@ XHH.Obstacle.prototype = {
 		
 		
 		if(this.dir == 1) {
-			if(bird.x > left - bird.r && bird.x < right + bird.r && bird.y < top) return true;	
-			if(bird.x > left && bird.x < right && bird.y - bird.r < top) return true;
+			if(bird.x >= left - Const.BIRD_RADIUS && bird.x <= right + Const.BIRD_RADIUS && bird.y <= top) return true;	
+			if(bird.x >= left && bird.x < right && bird.y - Const.BIRD_RADIUS <= top) return true;
 		}else{
-			if(bird.x > left - bird.r && bird.x < right + bird.r && bird.y > bottom) return true;	
-			if(bird.x > left && bird.x < right && bird.y + bird.r > bottom) return true;
+			if(bird.x >= left - Const.BIRD_RADIUS && bird.x <= right + Const.BIRD_RADIUS && bird.y >= bottom) return true;
+			if(bird.x >= left && bird.x <= right && bird.y + Const.BIRD_RADIUS >= bottom) return true;
 		}
 		
 		var bc = new XHH.Point(bird.x, bird.y);
 		var lc = new XHH.Point(left, this.dir == 1 ? top : bottom);
 		var rc = new XHH.Point(right, this.dir == 1 ? top : bottom);
 		
-		if(lc.dis(bc) < bird.r) return true;
-		if(rc.dis(bc) < bird.r) return true;
+		if(lc.dis(bc) <= Const.BIRD_RADIUS) return true;
+		if(rc.dis(bc) <= Const.BIRD_RADIUS) return true;
 		
 		return false;
 	}
@@ -168,6 +204,15 @@ XHH.Game.prototype = {
 		return false;
 	},
 	
+	hitTest : function(pt) {
+		for(var i=0;i<6*2;i++)
+		{
+			var obst = this.obsts[this.obstIndex + i];
+			
+			if(obst.hit(pt)) return true;
+		}
+		return false;
+	},
 	
 	update : function() {
 		
@@ -186,6 +231,22 @@ XHH.Game.prototype = {
 		// left most obstacle was out of view
 		if(obst_lm.x + obst_lm.width/2 < this.left)
 			this.obstIndex+=2;
+		
+		if(this.isCOM) {
+			if(this.ops.length == 0 && this.lastFound) {
+				this.lastFound = this.AStar();
+			}
+			if(this.ops.length != 0) {
+				while(this.ops[0].frame < this.frame) this.ops.shift();
+				if(this.ops[0].frame == this.frame) {
+					this.ops.shift();
+					this.bird.jump();
+				}
+				
+			}
+		}	
+		
+		this.frame++;
 	},
 	
 	drawBird : function() {
@@ -195,6 +256,19 @@ XHH.Game.prototype = {
 		ctx.arc(this.bird.x - this.left, this.bird.y, this.bird.r, 0, 2*Math.PI);
 		ctx.fill();
 		//ctx.endPath();
+	},
+	
+	drawTraj : function() {
+		
+		for(var i=0;i<this.traj.length;i++)
+		{
+			var p = this.traj[i].b;
+			ctx.beginPath();
+			ctx.fillStyle = "#0000FF";
+			ctx.arc(p.x - this.left, p.y, this.bird.r, 0, 2*Math.PI);
+			ctx.fill();
+		}
+		
 	},
 	
 	drawObst : function(obst) {
@@ -244,6 +318,7 @@ XHH.Game.prototype = {
 		this.update();
 		this.ctx.clearRect(0,0,Const.SCREEN_WIDTH,Const.SCREEN_HEIGHT);
 		this.drawObsts();
+		this.drawTraj();
 		this.drawBird();
 	},
 	
@@ -256,6 +331,98 @@ XHH.Game.prototype = {
 		localStorage.setItem("record", this.record);
 	},
 	
+	AStar : function() {
+		
+		var bx = new XHH.Point(this.bird.x, this.bird.y);
+		
+		var it = null, ib = null;
+		for(var i=0;i<3*2;i++)
+		{
+			var obst = this.obsts[this.obstIndex + i];	
+			if(obst.x > bx.x && obst.dir == 1 && it == null) it = obst;
+			if(obst.x > bx.x && obst.dir == -1 && ib == null) ib = obst;
+		}
+		
+		var center = new XHH.Point(it.x + it.width/2 + this.bird.r, it.height + Const.PASS_HEIGHT/2 + this.bird.r);
+		
+		console.log("A* current = " + bx.x + "," + bx.y + " target = " + center.x + "," + center.y);
+		
+		var q = new PriorityQueue({ comparator: function(a, b) { return a.f - b.f; }});
+		
+		var parent = {
+			parent : null,
+			b : bx,
+			g : 0,
+			h : bx.dis(center),
+			v : this.bird.vy,
+			frame : this.frame,
+			jump : 0,
+			toOP : function() { return new XHH.OP(this.frame, this.jump)}
+		};
+		
+		var n0 = new XHH.Node(parent, false, center);
+		var n1 = new XHH.Node(parent, true, center);
+		
+		var startTime = new Date().getTime();
+		
+		if(n0.valid && !this.hitTest(n0.b)) q.queue(n0);
+		if(n1.valid && !this.hitTest(n1.b)) q.queue(n1);
+		
+		var created = q.length;
+		var expended = 0;
+		var found = false;
+		
+		while(q.length != 0) {
+			var p = q.dequeue();
+			expended ++;
+			
+			// goal reached
+			if(p.b.dis(center) < 16) {
+				console.log("found!");
+				this.ops = [];
+				this.traj = [];
+				this.ops.push(p.toOP());
+				this.traj.push(p);
+				var pp = p.parent;
+				while(pp) {
+					if(pp.jump) this.ops.push(pp.toOP());
+					this.traj.push(pp);
+					pp = pp.parent;
+				}
+				
+				this.ops.reverse();
+				
+				found = true;
+				
+				break;
+			}
+			
+			n0 = new XHH.Node(p, false, center);
+			n1 = new XHH.Node(p, true, center);
+			
+			if(n0.valid && !this.hitTest(n0.b)) { q.queue(n0); created++; }
+			if(n1.valid && !this.hitTest(n1.b)) { q.queue(n1); created++; }
+			
+			if(expended > 4e5) break;
+		}
+		
+		var endTime = new Date().getTime();
+		
+		console.log("found = " + found + " created = " + created + " expended = " + expended + " time = " + (endTime - startTime));
+		
+		return found;
+	},
+	
+	start : function(isCOM) {
+		
+		this.isCOM = isCOM;
+		this.isGameStarted = true;
+		
+		if(isCOM) {
+			this.lastFound = this.AStar();
+		}
+	},
+	
 	init : function(seed, ctx) {
 		this.seed = seed ? seed : 0;
 		this.ctx = ctx;
@@ -264,24 +431,36 @@ XHH.Game.prototype = {
 		this.obsts = [];
 		this.left = 0;
 		this.score = 0;
+		this.isCOM = false;
 		this.record = this.getRecord();
 		this.obstIndex = 0;
 		this.bird = new XHH.Bird();
 		this.isGameOver = false;
 		this.isGameStarted = false;
 		this.createObstacle();
+		this.ops = [];
+		this.traj = [];
+		this.lastFound = false;
+		this.frame = 0;
 	},
 	
 	onkeydown : function(e) {
 		var keyCode = ('which' in event) ? event.which : event.keyCode;
 		switch(keyCode){
-			case 32:
-			if(this.isGameOver && (new Date().getTime() - this.gameOverTime > 500)){
-				this.init(this.seed, this.ctx);
-			}else{
-				this.isGameStarted = true;
-				this.bird.jump();
-			}
+			case 32:	// space
+				if(this.isGameOver && (new Date().getTime() - this.gameOverTime > 500)){
+					this.init(this.seed, this.ctx);
+				} else if(!this.isGameStarted){
+					this.start(false);
+					this.bird.jump();
+				} else {
+					this.isCOM = false;
+					this.bird.jump();
+				}
+				break;
+			case 68:	// d
+				this.start(true);
+				break;
 		}
 	}
 }

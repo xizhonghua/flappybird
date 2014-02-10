@@ -13,4 +13,5 @@
 #record { top:300px; }
 
 #gameover { color: #F5690C; font-weight:bolder;}
-#start { color: #398F28; }
+
+#start, #demo { color: #398F28; }
