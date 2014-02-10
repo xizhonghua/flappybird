@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Flappy Bird</title>
+		<link rel="stylesheet" href="style.css" />	
+	</head>
+	
+	<body>
+		<div>
+		<canvas id="myCanvas" width="480" height="640" style="border:1px solid #000000;"></canvas>
+		<div id="score">0</div>
+		<div id="start" class="message">Press Space</div>
+		<div id="gameover" class="message">Game Over</div>
+		<div id="record">0</div>
+		</div>
+		<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+		<script src="flappybird.js"></script>
+		<script>
+			window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+                              window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+                              
+			var c = document.getElementById("myCanvas");
+			var ctx = c.getContext("2d");
+			var game = new XHH.Game();
+			game.init(1, ctx);
+			
+			$("#gameover, #record").hide();
+			
+			function render(timestamp) {
+				game.render();
+				$("#score").html(game.score);
+				if(game.isGameStarted) $("#start").hide(); else $("#start").show();
+				if(game.isGameOver) {
+					$("#gameover").show();
+					$("#record").html("Record: " + game.record).show(); 
+				}
+				else {
+					$("#gameover").hide();
+					$("#record").html(game.record).hide();
+				}
+				requestAnimationFrame(render);
+			}
+			
+			requestAnimationFrame(render);
+			
+			window.onkeydown = function(e) { game.onkeydown(e); };
+		</script>
+	</body>
+	
+</html>

@@ -1,0 +1,13 @@
+#score, .message, #record {
+	font-size:40px;
+	position:absolute;
+	text-align: center;
+	width:480px;
+	margin:0 auto;
+}
+
+#score { top:100px; }
+
+.message { top:240px; }
+
+#record { top:300px; }
