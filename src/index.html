@@ -64,10 +64,12 @@
 				game.start(true);
 			});
 			
-			$("#myCanvas").click(function(){
+			var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+			
+			$("#myCanvas").on(isMobile ? 'touchend' : 'click', function(e){
 				game.start(false);
 				game.jump();
-			}, false);
+			});
 		</script>
 	</body>
 	
