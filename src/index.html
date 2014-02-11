@@ -69,6 +69,7 @@
 			$("#myCanvas").on(isMobile ? 'touchend' : 'click', function(e){
 				game.start(false);
 				game.jump();
+				return false;
 			});
 		</script>
 	</body>
