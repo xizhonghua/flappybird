@@ -6,16 +6,19 @@
 	</head>
 	
 	<body>
-		<div>
-		<canvas id="myCanvas" width="480" height="640" style="border:1px solid #000000;"></canvas>
-		<div id="score">0</div>
-		<div id="start" class="message">Press Space</div>
-		<div id="gameover" class="message">Game Over</div>
-		<div id="demo" class="message">Auto Playing</div>
-		<div id="record">0</div>
-		</div>
-		<div>
-			<ul><li>press Space to jump/restart</li><li>press d for auto play</li></ul>
+		<div onselectstart="return false;" ondragstart="return false;">
+			<canvas id="myCanvas" width="480" height="640" style="border:1px solid #000000;"></canvas>
+			<div id="score">0</div>
+			<div id="start" class="message">Press Space</div>
+			<div id="gameover" class="message">Game Over</div>
+			<div id="demo" class="message">Auto Playing</div>
+			<div id="record">0</div>
+			<div>
+				<ul>
+					<li>press Space or tap to jump/restart</li>
+					<li>press d for auto play <input type="button" id="btn-auto-play" value="AutoPlay" /></li>
+				</ul>
+			</div>
 		</div>
 		<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 		<script src="priority-queue.js"></script>
@@ -56,6 +59,15 @@
 			requestAnimationFrame(render);
 			
 			window.onkeydown = function(e) { game.onkeydown(e); };
+			
+			$("#btn-auto-play").click(function(){
+				game.start(true);
+			});
+			
+			$("#myCanvas").click(function(){
+				game.start(false);
+				game.jump();
+			});
 		</script>
 	</body>
 	

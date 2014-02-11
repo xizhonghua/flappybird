@@ -444,19 +444,24 @@ XHH.Game.prototype = {
 		this.frame = 0;
 	},
 	
+	jump : function() {
+		if(this.isGameOver && (new Date().getTime() - this.gameOverTime > 500)){
+			this.init(this.seed, this.ctx);
+		} else if(!this.isGameStarted){
+			this.start(false);
+			this.bird.jump();
+		} else {
+			this.isCOM = false;
+			this.bird.jump();
+		}
+	},
+	
+	
 	onkeydown : function(e) {
 		var keyCode = ('which' in event) ? event.which : event.keyCode;
 		switch(keyCode){
 			case 32:	// space
-				if(this.isGameOver && (new Date().getTime() - this.gameOverTime > 500)){
-					this.init(this.seed, this.ctx);
-				} else if(!this.isGameStarted){
-					this.start(false);
-					this.bird.jump();
-				} else {
-					this.isCOM = false;
-					this.bird.jump();
-				}
+				this.jump();
 				break;
 			case 68:	// d
 				this.start(true);
