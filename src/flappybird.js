@@ -2,7 +2,7 @@ var Const = {
 	BIRD_RADIUS : 28,
 	BIRD_JUMP_SPEED : 10,
 	OBST_WIDTH : 85,
-	OBST_MAX_HEIGHT : 240,
+	OBST_MAX_HEIGHT : 400,
 	OBST_MIN_HEIGHT : 40,
 	OBST_COUNT : 10000,
 	OBST_START_X : 300,
@@ -343,7 +343,7 @@ XHH.Game.prototype = {
 			if(obst.x > bx.x && obst.dir == -1 && ib == null) ib = obst;
 		}
 		
-		var center = new XHH.Point(it.x + it.width/2 + this.bird.r, it.height + Const.PASS_HEIGHT/2 + this.bird.r);
+		var center = new XHH.Point(it.x + this.bird.r*2, it.height + Const.PASS_HEIGHT/2 + this.bird.r);
 		
 		console.log("A* current = " + bx.x + "," + bx.y + " target = " + center.x + "," + center.y);
 		
