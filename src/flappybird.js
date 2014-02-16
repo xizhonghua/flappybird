@@ -5,14 +5,15 @@ var Const = {
 	OBST_MAX_HEIGHT : 400,
 	OBST_MIN_HEIGHT : 40,
 	OBST_COUNT : 10000,
-	OBST_START_X : 300,
+	OBST_START_X : 600,
 	OBST_MARGIN : 300,
 	OBST_HEAD_HEIGHT : 32,
 	SCREEN_HEIGHT : 640,
 	SCREEN_WIDTH : 480,
 	PASS_HEIGHT : 200,
 	X_VOL : 4,
-	G : 0.8
+	G : 0.8,
+	JUMP_INTERVAL: 8	//can jump after 4 frames
 };
 	
 var XHH = {	
@@ -43,7 +44,7 @@ var XHH = {
 	},
 	
 	Node : function(parent, jump, nextCenter) {
-		this.frame = parent.frame + 1;
+		this.frame = parent.frame+1;
 		this.r = Const.BIRD_RADIUS;
 		this.parent = parent;
 		
@@ -52,10 +53,14 @@ var XHH = {
 		this.jump = jump;
 		this.valid = true;
 		
-		if(jump) // jump
+		if(jump) {
 			this.v = -Const.BIRD_JUMP_SPEED;
-		else
+			this.lastJumpFrame = this.frame;
+		}
+		else {
 			this.v = parent.v + Const.G;
+			this.lastJumpFrame = parent.lastJumpFrame;
+		}
 			
 		this.b.y += this.v;
 		
@@ -356,17 +361,18 @@ XHH.Game.prototype = {
 			h : bx.dis(center),
 			v : this.bird.vy,
 			frame : this.frame,
+			lastJumpFrame : this.frame,
 			jump : 0,
 			toOP : function() { return new XHH.OP(this.frame, this.jump)}
 		};
 		
 		var n0 = new XHH.Node(parent, false, center);
-		var n1 = new XHH.Node(parent, true, center);
+		//var n1 = new XHH.Node(parent, true, center);
 		
 		var startTime = new Date().getTime();
 		
 		if(n0.valid && !this.hitTest(n0.b)) q.queue(n0);
-		if(n1.valid && !this.hitTest(n1.b)) q.queue(n1);
+		//if(n1.valid && !this.hitTest(n1.b)) q.queue(n1);
 		
 		var created = q.length;
 		var expended = 0;
@@ -398,10 +404,13 @@ XHH.Game.prototype = {
 			}
 			
 			n0 = new XHH.Node(p, false, center);
-			n1 = new XHH.Node(p, true, center);
-			
 			if(n0.valid && !this.hitTest(n0.b)) { q.queue(n0); created++; }
-			if(n1.valid && !this.hitTest(n1.b)) { q.queue(n1); created++; }
+			
+			if(p.frame - p.lastJumpFrame >= Const.JUMP_INTERVAL)
+			{
+				n1 = new XHH.Node(p, true, center);
+				if(n1.valid && !this.hitTest(n1.b)) { q.queue(n1); created++; }
+			}
 			
 			if(expended > 4e5) break;
 		}
