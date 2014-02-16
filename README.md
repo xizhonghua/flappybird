@@ -12,16 +12,16 @@ Watch a demo video:
 
 Auto-Playing
 ------------
-Auto-Playing is achieved by performe a local A* search to reach the center of next pipe.
-
 Each frame, the bird can either:
 
 1. Jump ?
 2. Do nothing
 
-System Peremters
+Auto-Playing is achieved by performe a local A* search to find a path form current position to the center of next group of pipes.
+
+System Parameters
 ----------------
-System peremters include:
+System parameters include:
 
 1. Flying speed
 2. Jumping speed
